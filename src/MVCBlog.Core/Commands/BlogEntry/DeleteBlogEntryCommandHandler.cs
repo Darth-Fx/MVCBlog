@@ -16,12 +16,18 @@ namespace MVCBlog.Core.Commands
 
         public async Task HandleAsync(DeleteBlogEntryCommand command)
         {
-            var entity = await this.repository.BlogEntries
-                .Include(b => b.BlogEntryFiles)
+             var entity = await this.repository.BlogEntries
+                .Include(b => b.BlogEntryFiles).Include(c => c.Tags)
                 .SingleOrDefaultAsync(e => e.Id == command.Id);
 
             if (entity != null)
             {
+                var tagsToRemove = entity.Tags
+                  .ToArray();
+                foreach (var tag in tagsToRemove)
+                {
+                    repository.Tags.Remove(tag);
+                }
                 foreach (var blogEntryFile in entity.BlogEntryFiles)
                 {
                     blogEntryFile.DeleteData();
